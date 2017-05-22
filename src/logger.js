@@ -7,7 +7,9 @@ const { DEBUG, INFO, WARN, ERROR, NONE } = require('./const').LOG;
 
 // Pretty arbitrary test that IE/edge fails and others don't.  Yes I could do a more direct
 // test for IE/edge but its hoped that MS will fix this around the time they cleanup their internal console object.
-const supportsConsoleFormatting = Boolean(console.assert && console.assert.toString().match(/assert/));
+// Note that uglifyjs with drop_console=true will throw an error on console.assert.toString().match; so we instead do (console.assert.toString() || "") which drop_console
+// on replacing console.assert.toString() with (void 0) will still work
+const supportsConsoleFormatting = Boolean(console.assert && (console.assert.toString() || "").match(/assert/));
 const LayerCss = 'color: #888; font-weight: bold;';
 const Black = 'color: black';
 /* istanbulify ignore next */
