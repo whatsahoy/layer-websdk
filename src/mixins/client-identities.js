@@ -21,6 +21,16 @@ module.exports = {
     'identities:loaded',
 
     /**
+     * A call to layer.Identity.load has failed
+     *
+     * @event
+     * @event
+     * @param {layer.LayerEvent} evt
+     * @param {layer.LayerError} evt.error
+     */
+    'identities:loaded-error',
+
+    /**
      * An Identity has had a change in its properties.
      *
      * Changes occur when new data arrives from the server.
