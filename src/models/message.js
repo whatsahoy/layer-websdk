@@ -204,6 +204,7 @@ class Message extends Syncable {
       parts.clientId = this.clientId;
       adjustedParts = [new MessagePart(parts)];
     }
+    this._setupPartIds(adjustedParts);
     if (adjustedParts) {
       adjustedParts.forEach((part) => {
         part.off('messageparts:change', this._onMessagePartChange, this); // if we already subscribed, don't create a redundant subscription
@@ -237,9 +238,12 @@ class Message extends Syncable {
       } else if (typeof part === 'object') {
         this.parts.push(new MessagePart(part));
       }
-      const thePart = this.parts[this.parts.length - 1];
+      const index = this.parts.length - 1;
+      const thePart = this.parts[index];
+
       thePart.off('messageparts:change', this._onMessagePartChange, this); // if we already subscribed, don't create a redundant subscription
       thePart.on('messageparts:change', this._onMessagePartChange, this);
+      if (!part.id) part.id = `${this.id}/parts/${index}`;
     }
     return this;
   }
@@ -576,6 +580,22 @@ class Message extends Syncable {
   }
 
   /**
+   * Setup message-part ids for parts that lack that id; for locally created parts.
+   *
+   * @private
+   * @method
+   * @param {layer.MessagePart[]} parts
+   */
+  _setupPartIds(parts) {
+    // Assign IDs to preexisting Parts so that we can call getPartById()
+    if (parts) {
+      parts.forEach((part, index) => {
+        if (!part.id) part.id = `${this.id}/parts/${index}`;
+      });
+    }
+  }
+
+  /**
    * Populates this instance with the description from the server.
    *
    * Can be used for creating or for updating the instance.
@@ -592,15 +612,7 @@ class Message extends Syncable {
     this.url = message.url;
     const oldPosition = this.position;
     this.position = message.position;
-
-
-    // Assign IDs to preexisting Parts so that we can call getPartById()
-    if (this.parts) {
-      this.parts.forEach((part, index) => {
-        if (!part.id) part.id = `${this.id}/parts/${index}`;
-      });
-    }
-
+    this._setupPartIds(message.parts);
     this.parts = message.parts.map((part) => {
       const existingPart = this.getPartById(part.id);
       if (existingPart) {

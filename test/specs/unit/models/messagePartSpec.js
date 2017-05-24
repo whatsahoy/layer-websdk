@@ -1,4 +1,3 @@
-
 /* eslint-disable */
 describe("The MessageParts class", function() {
     var appId = "Fred's App";
@@ -744,7 +743,7 @@ describe("The MessageParts class", function() {
                 upload_url: "http://argh.com",
                     id: "layer:///content/fred"
                 },
-                client);
+                client, blobBody, 0);
         });
     });
 
@@ -764,7 +763,7 @@ describe("The MessageParts class", function() {
             // Run
             part._processContentUploadResponse({
                 success: true
-            }, {id: "doh"}, client);
+            }, {id: "doh"}, part.body, client, 0);
 
 
             // Posttest
@@ -792,28 +791,56 @@ describe("The MessageParts class", function() {
             // Run
             part._processContentUploadResponse({
                 success: false
-            }, {id: "doh"}, client);
+            }, {id: "doh"}, client, part.body, 0);
             client.onlineManager.trigger("connected");
 
             // Posttest
             expect(part._processContentResponse).toHaveBeenCalledWith({id: "doh"}, client, jasmine.any(layer.LayerEvent));
         });
 
-        it("Should not know how to handle other errors", function() {
+        it("Should call _processContentResponse on error", function() {
             var part = new layer.MessagePart({
                 body: new Array(5000).join("hello"),
                 mimeType: "text/plain",
                 id: "layer:///content/fred"
             });
             spyOn(part, "trigger");
+            spyOn(part, "_processContentResponse");
 
             // Run
             part._processContentUploadResponse({
                 success: false
-            }, {id: "doh"}, client);
+            }, {id: "doh"}, client, part.body, 0);
 
             // Posttest
             expect(part.trigger).not.toHaveBeenCalled();
+            expect(part._processContentResponse).toHaveBeenCalledWith({id: "doh"}, part.body, client, 1);
+        });
+
+        it("Should trigger messages:sent-error after max-retries", function() {
+            var part = new layer.MessagePart({
+                body: new Array(5000).join("hello"),
+                mimeType: "text/plain",
+                clientId: client.appId
+            });
+            var message = conversation.createMessage({
+                parts: [part]
+            });
+            client._addMessage(message);
+            spyOn(message, "trigger");
+            spyOn(part, "_processContentResponse");
+
+            // Run
+            part._processContentUploadResponse({
+                success: false
+            }, {id: "doh"}, client, part.body, layer.MessagePart.MaxRichContentRetryCount);
+
+            // Posttest
+            expect(message.trigger).toHaveBeenCalledWith('messages:sent-error', {
+                error: jasmine.any(layer.LayerError),
+                part: part
+            });
+            expect(part._processContentResponse).not.toHaveBeenCalled();
         });
     });
 

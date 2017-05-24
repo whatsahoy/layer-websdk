@@ -2191,28 +2191,6 @@ describe("The Message class", function() {
             expect(m.parts[1]._populateFromServer).toHaveBeenCalledWith(responses.message1.parts[1]);
         });
 
-        it("Should call MessagePart._populateFromServer even if parts don't have IDs", function() {
-            // Setup
-            m = new layer.Message.ConversationMessage({
-              client: client,
-              fromServer: responses.message1
-            });
-            m.parts[0].id = m.parts[1].id = '';
-            spyOn(m.parts[0], "_populateFromServer");
-            spyOn(m.parts[1], "_populateFromServer");
-            var parts = m.parts;
-
-            // Run
-            m._populateFromServer(responses.message1);
-
-            // Posttest
-            expect(m.parts[0]).toBe(parts[0]);
-            expect(m.parts[1]).toBe(parts[1]);
-            expect(m.parts.length).toEqual(2);
-            expect(m.parts[0]._populateFromServer).toHaveBeenCalledWith(responses.message1.parts[0]);
-            expect(m.parts[1]._populateFromServer).toHaveBeenCalledWith(responses.message1.parts[1]);
-        });
-
         it("Should call __updateRecipientStatus()", function() {
             // Setup
             m = new layer.Message.ConversationMessage({

@@ -436,11 +436,11 @@ class MessagePart extends Root {
    * @param  {Object} response
    * @param  {Blob} body
    * @param  {layer.Client} client
+   * @param {Number} [retryCount=0]
    */
-  _processContentResponse(response, body, client) {
+  _processContentResponse(response, body, client, retryCount = 0) {
     this._content = new Content(response.id);
     this.hasContent = true;
-
     xhr({
       url: response.upload_url,
       method: 'PUT',
@@ -449,15 +449,43 @@ class MessagePart extends Root {
         'Upload-Content-Length': this.size,
         'Upload-Content-Type': this.mimeType,
       },
-    }, result => this._processContentUploadResponse(result, response, client));
+    }, result => this._processContentUploadResponse(result, response, client, body, retryCount));
   }
 
-  _processContentUploadResponse(uploadResult, contentResponse, client) {
+  /**
+   * Process the response to uploading the content to google cloud storage.
+   *
+   * Result is either:
+   *
+   * 1. trigger `parts:send` on success
+   * 2. call `_processContentResponse` to retry
+   * 3. trigger `messages:sent-error` if retries have failed
+   *
+   * @method _processContentUploadResponse
+   * @private
+   * @param  {Object} uploadResult    Response from google cloud server; note that the xhr method assumes some layer-like behaviors and may replace non-json responses with js objects.
+   * @param  {Object} contentResponse Response to `POST /content` from before
+   * @param  {layer.Client} client
+   * @param  {Blob} body
+   * @param  {Number} retryCount
+   */
+  _processContentUploadResponse(uploadResult, contentResponse, client, body, retryCount) {
     if (!uploadResult.success) {
       if (!client.onlineManager.isOnline) {
         client.onlineManager.once('connected', this._processContentResponse.bind(this, contentResponse, client), this);
+      } else if (retryCount < MessagePart.MaxRichContentRetryCount) {
+        this._processContentResponse(contentResponse, body, client, retryCount + 1);
       } else {
-        logger.error('We don\'t yet handle this!');
+        logger.error('Failed to upload rich content; triggering message:sent-error event; status of ', uploadResult.status, this);
+        this._getMessage().trigger('messages:sent-error', {
+          error: new LayerError({
+            message: 'Upload of rich content failed',
+            httpStatus: uploadResult.status,
+            code: 0,
+            data: uploadResult.xhr,
+          }),
+          part: this,
+        });
       }
     } else {
       this.trigger('parts:send', {
@@ -704,6 +732,13 @@ MessagePart.prototype.size = 0;
  * @type {Mixed[]}
  */
 MessagePart.TextualMimeTypes = [/^text\/.+$/, /^application\/json(\+.+)?$/];
+
+/**
+ * Number of retry attempts to make before giving up on uploading Rich Content to Google Cloud Storage.
+ *
+ * @type {Number}
+ */
+MessagePart.MaxRichContentRetryCount = 3;
 
 MessagePart._supportedEvents = [
   'parts:send',

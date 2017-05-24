@@ -4,6 +4,7 @@
 
 * Fixes error when using jsuglify with `drop_console=true` #138
 * Fixes `Client ignored identities:loaded-error` bug; this event now works as expected
+* Adds handling for failure to upload Rich Content; now triggers `messages:sent-error` events due to this error preventing messages from being sent.
 
 ## 3.3.1
 
