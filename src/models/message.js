@@ -214,6 +214,21 @@ class Message extends Syncable {
     return adjustedParts;
   }
 
+  __updateParts(parts) {
+    if (parts) this._regenerateMimeAttributesMap();
+  }
+  _regenerateMimeAttributesMap() {
+    this._mimeAttributeMap = {};
+    this.parts.forEach(part => this._addToMimeAttributesMap(part));
+  }
+  _addToMimeAttributesMap(part) {
+    const map = this._mimeAttributeMap;
+    Object.keys(part.mimeAttributes).forEach((name) => {
+      if (!(name in map)) map[name] = [];
+      map[name].push({ part, value: part.mimeAttributes[name] });
+    });
+  }
+
   /**
    * Add a layer.MessagePart to this Message.
    *
@@ -245,6 +260,7 @@ class Message extends Syncable {
       thePart.on('messageparts:change', this._onMessagePartChange, this);
       if (!part.id) part.id = `${this.id}/parts/${index}`;
     }
+    this._addToMimeAttributesMap(part)
     return this;
   }
 
@@ -678,10 +694,11 @@ class Message extends Syncable {
 
 
   getPartWithAttribute(name, value = null) {
+    if (!this._mimeAttributeMap[name]) return null;
     if (value) {
-      return this.parts.filter(part => part.mimeAttributes[name] === value)[0];
+      return this._mimeAttributeMap[name].filter(item => item.value === value)[0] || null;
     } else {
-      return this.parts.filter(part => name in part.mimeAttributes)[0];
+      return this._mimeAttributeMap[name][0].part;
     }
   }
 
@@ -892,6 +909,31 @@ Object.defineProperty(Message.prototype, 'isUnread', {
     return !this.isRead;
   },
 });
+
+/**
+ * A map of every Message Part attribute.
+ *
+ * Structure is:
+ *
+ * ```
+ * {
+ *    attributeName: [
+ *      {
+ *        part: partWithThisValue,
+ *        value: theValue
+ *      },
+ *      {
+ *        part: partWithThisValue,
+ *        value: theValue
+ *      }
+ *    ],
+ *    attributeName2: [...]
+ * }
+ * ```
+ * @type {Object}
+ * @private
+ */
+Message.prototype._mimeAttributeMap = null;
 
 
 Message.prototype._toObject = null;
