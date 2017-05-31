@@ -106,6 +106,10 @@ class MessagePart extends Root {
       };
     }
     super(newOptions);
+
+    this.mimeAttributes = {};
+    this._moveMimeTypeToAttributes();
+
     if (!this.size && this.body) this.size = this.body.length;
 
     // Don't expose encoding; blobify it if its encoded.
@@ -128,6 +132,25 @@ class MessagePart extends Root {
 
     // If our textual content is a blob, turning it into text is asychronous, and can't be done in the synchronous constructor
     // This will only happen when the client is attaching a file.  Conversion for locally created messages is done while calling `Message.send()`
+  }
+
+
+  _moveMimeTypeToAttributes() {
+    const attributes = this.mimeAttributes;
+    const parameters = this.mimeType.split(/\s*;\s*/);
+    if (!parameters) return;
+    this.mimeType = parameters.shift();
+
+    parameters.forEach((param) => {
+      const index = param.indexOf('=');
+      if (index === -1) {
+        attributes[param] = true;
+      } else {
+        const pName = param.substring(0, index);
+        const pValue = param.substring(index + 1);
+        attributes[pName] = pValue;
+      }
+    });
   }
 
   destroy() {
@@ -355,8 +378,13 @@ class MessagePart extends Root {
       throw new Error(err);
     }
 
+    const mimeType = this.mimeType + ';' + Object.keys(this.mimeAttributes).map((key) => {
+      if (this.mimeAttributes[key] === true) return key;
+      return key + '=' + this.mimeAttributes[key];
+    }).join(';');
+
     const obj = {
-      mime_type: this.mimeType,
+      mime_type: mimeType,
       body: this.body,
     };
     this.trigger('parts:send', obj);
@@ -364,7 +392,7 @@ class MessagePart extends Root {
 
   _sendWithContent() {
     this.trigger('parts:send', {
-      mime_type: this.mimeType,
+      mime_type: mimeType,
       content: {
         size: this.size,
         id: this._content.id,
@@ -705,6 +733,15 @@ Object.defineProperty(MessagePart.prototype, 'url', {
  * @type {String}
  */
 MessagePart.prototype.mimeType = 'text/plain';
+
+/**
+ * Mime Type Attributes are attributes provided via the mimeType.
+ *
+ * These attributes are removed from the mimeType and moved into a hash.
+ *
+ * @type {Object}
+ */
+MessagePart.prototype.mimeAttributes = null;
 
 /**
  * Size of the layer.MessagePart.body.

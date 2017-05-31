@@ -653,6 +653,8 @@ function initClass(newClass, className) {
   if (newClass.mixins) {
     newClass.mixins.forEach((mixin) => {
       if (mixin.events) newClass._supportedEvents = newClass._supportedEvents.concat(mixin.events);
+      Object.keys(mixin.staticMethods || {}).forEach(methodName => (newClass[methodName] = mixin.staticMethods[methodName]));
+
       if (mixin.properties) {
         Object.keys(mixin.properties).forEach((key) => {
           newClass.prototype[key] = mixin.properties[key];

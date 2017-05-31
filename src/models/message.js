@@ -669,6 +669,22 @@ class Message extends Syncable {
     return part || null;
   }
 
+  getPartWithMimeType(mimeType) {
+    for (let i = 0; i < this.parts.length; i++) {
+      if (this.parts[i].mimeType === mimeType) return this.parts[i];
+    }
+    return null;
+  }
+
+
+  getPartWithAttribute(name, value = null) {
+    if (value) {
+      return this.parts.filter(part => part.mimeAttributes[name] === value)[0];
+    } else {
+      return this.parts.filter(part => name in part.mimeAttributes)[0];
+    }
+  }
+
   /**
    * Accepts json-patch operations for modifying recipientStatus.
    *
