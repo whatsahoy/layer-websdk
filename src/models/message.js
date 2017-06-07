@@ -692,14 +692,46 @@ class Message extends Syncable {
     return null;
   }
 
-
-  getPartWithAttribute(name, value = null) {
+  /**
+   * Returns array of layer.MessagePart that have the specified MIME Type attribute.
+   *
+   * ```
+   * // get all parts where mime type has "lang=en-us" in it
+   * var enUsParts = message.getPartsWithAttribute('lang', 'en-us');
+   *
+   * // get all parts where mime type has a "lang" attribute in it
+   * var allLangParts = message.getPartsWithAttribute('lang');
+   * ```
+   *
+   * @method
+   * @param {String} name
+   * @param {String} [value=null]
+   * @returns {layer.MessagePart[]}
+   */
+  getPartsWithAttribute(name, value = null) {
     if (!this._mimeAttributeMap[name]) return null;
+
+    let result;
     if (value) {
-      return this._mimeAttributeMap[name].filter(item => item.value === value)[0] || null;
+      result = this._mimeAttributeMap[name].filter(item => item.value === value);
     } else {
-      return this._mimeAttributeMap[name][0].part;
+      result = this._mimeAttributeMap[name];
     }
+    return result.map(item => item.part);
+  }
+
+  /**
+   * If there is a single message part that has the named attribute, return its value.
+   *
+   * If there are 0 or more than one message parts with this attribute, returns `null` instead.
+   *
+   * @method
+   * @param {String} name
+   * @returns {String}
+   */
+  getAttributeValue(name) {
+    if (!this._mimeAttributeMap[name] || this._mimeAttributeMap[name].length > 1) return null;
+    return this._mimeAttributeMap[name][0].value;
   }
 
   /**
