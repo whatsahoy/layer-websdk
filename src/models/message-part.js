@@ -378,10 +378,11 @@ class MessagePart extends Root {
       throw new Error(err);
     }
 
-    const mimeType = this.mimeType + ';' + Object.keys(this.mimeAttributes).map((key) => {
+    const attributeString = Object.keys(this.mimeAttributes).map((key) => {
       if (this.mimeAttributes[key] === true) return key;
       return key + '=' + this.mimeAttributes[key];
     }).join(';');
+    const mimeType = this.mimeType + (attributeString ? ';' + attributeString : '');
 
     const obj = {
       mime_type: mimeType,
@@ -392,7 +393,7 @@ class MessagePart extends Root {
 
   _sendWithContent() {
     this.trigger('parts:send', {
-      mime_type: mimeType,
+      mime_type: this.mimeType,
       content: {
         size: this.size,
         id: this._content.id,

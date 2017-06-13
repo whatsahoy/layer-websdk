@@ -259,8 +259,8 @@ class Message extends Syncable {
       thePart.off('messageparts:change', this._onMessagePartChange, this); // if we already subscribed, don't create a redundant subscription
       thePart.on('messageparts:change', this._onMessagePartChange, this);
       if (!part.id) part.id = `${this.id}/parts/${index}`;
+      this._addToMimeAttributesMap(thePart);
     }
-    this._addToMimeAttributesMap(part)
     return this;
   }
 
