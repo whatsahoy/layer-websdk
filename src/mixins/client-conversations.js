@@ -200,16 +200,18 @@ module.exports = {
      * @return {layer.Conversation}
      */
     getConversation(id, canLoad) {
+      let result = null;
       if (typeof id !== 'string') throw new Error(ErrorDictionary.idParamRequired);
       if (!Conversation.isValidId(id)) {
         id = Conversation.prefixUUID + id;
       }
       if (this._models.conversations[id]) {
-        return this._models.conversations[id];
+        result = this._models.conversations[id];
       } else if (canLoad) {
-        return Conversation.load(id, this);
+        result = Conversation.load(id, this);
       }
-      return null;
+      if (canLoad) result._loadType = 'fetched';
+      return result;
     },
 
     /**
@@ -396,6 +398,7 @@ module.exports = {
       if (!this.isAuthenticated) throw new Error(ErrorDictionary.clientMustBeReady);
       if (!('distinct' in options)) options.distinct = true;
       options.client = this;
+      options._loadType = 'websocket'; // treat this the same as a websocket loaded object
       return Conversation.create(options);
     },
   },

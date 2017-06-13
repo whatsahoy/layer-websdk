@@ -107,6 +107,7 @@ class Channel extends Container {
     } : options;
     messageConfig.clientId = this.clientId;
     messageConfig.conversationId = this.id;
+    messageConfig._loadType = 'websocket'; // treat this the same as a websocket loaded object
 
     return new ChannelMessage(messageConfig);
   }

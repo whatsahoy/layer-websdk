@@ -214,6 +214,8 @@ module.exports = {
      * @return {layer.Message}
      */
     getMessage(id, canLoad) {
+      let result = null;
+
       if (typeof id !== 'string') throw new Error(ErrorDictionary.idParamRequired);
 
       // NOTE: This could be an announcement
@@ -222,11 +224,13 @@ module.exports = {
       }
 
       if (this._models.messages[id]) {
-        return this._models.messages[id];
+        result = this._models.messages[id];
       } else if (canLoad) {
-        return Syncable.load(id, this);
+        result = Syncable.load(id, this);
       }
-      return null;
+      if (canLoad) result._loadType = 'fetched';
+
+      return result;
     },
 
     /**

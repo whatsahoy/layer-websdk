@@ -197,16 +197,19 @@ module.exports = {
      * @return {layer.Channel}
      */
     getChannel(id, canLoad) {
+      let result = null;
+
       if (typeof id !== 'string') throw new Error(ErrorDictionary.idParamRequired);
       if (!Channel.isValidId(id)) {
         id = Channel.prefixUUID + id;
       }
       if (this._models.channels[id]) {
-        return this._models.channels[id];
+        result = this._models.channels[id];
       } else if (canLoad) {
-        return Channel.load(id, this);
+        result = Channel.load(id, this);
       }
-      return null;
+      if (canLoad) result._loadType = 'fetched';
+      return result;
     },
 
     /**
@@ -394,6 +397,7 @@ module.exports = {
       if (!this.isAuthenticated) throw new Error(ErrorDictionary.clientMustBeReady);
       if (!('private' in options)) options.private = false;
       options.client = this;
+      options._loadType = 'websocket'; // treat this the same as a websocket loaded object
       return Channel.create(options);
     },
   },

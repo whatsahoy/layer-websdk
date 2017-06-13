@@ -419,6 +419,30 @@ Syncable.prototype.syncState = SYNC_STATE.NEW;
  */
 Syncable.prototype._syncCounter = 0;
 
+
+/**
+ * Specifies why this object was loaded.
+ *
+ * Values are:
+ *
+ * * fetched
+ * * queried
+ * * websocket
+ *
+ * Fetched objects must be destroyed by the fetcher when done.
+ *
+ * Queried objects can be destroyed once the query no longer uses them.
+ *
+ * Websocket objects can stick around for a while but must eventually be cleaned up unless they are used by a Query.
+ * Currently, a websocket object will stick around for one hour unless its used by a Query.
+ * Locally created objects are treated as websocket created objects since
+ * once created we get a websocket create event for them.
+ *
+ * @type {String} [_loadType=queried]
+ * @private
+ */
+Syncable.prototype._loadType = 'queried';
+
 /**
  * Prefix to use when triggering events
  * @private

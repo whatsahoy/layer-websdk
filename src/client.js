@@ -408,8 +408,8 @@ class Client extends ClientAuth {
   _scheduleCheckAndPurgeCache(object) {
     if (object.isSaved()) {
       if (this._scheduleCheckAndPurgeCacheAt < Date.now()) {
-        this._scheduleCheckAndPurgeCacheAt = Date.now() + Client.CACHE_PURGE_INTERVAL;
-        setTimeout(() => this._runScheduledCheckAndPurgeCache(), Client.CACHE_PURGE_INTERVAL);
+        this._scheduleCheckAndPurgeCacheAt = Date.now() + Client.QUERIED_CACHE_PURGE_INTERVAL;
+        setTimeout(() => this._runScheduledCheckAndPurgeCache(), Client.QUERIED_CACHE_PURGE_INTERVAL);
       }
       this._scheduleCheckAndPurgeCacheItems.push(object);
     }
@@ -439,10 +439,16 @@ class Client extends ClientAuth {
    * @return {Boolean}
    */
   _isCachedObject(obj) {
+    if (obj._loadType === 'fetched') return true;
     const list = Object.keys(this._models.queries);
     for (let i = 0; i < list.length; i++) {
       const query = this._models.queries[list[i]];
-      if (query._getItem(obj.id)) return true;
+      if (query._getItem(obj.id)) {
+        if (obj._loadType === 'websocket') obj._loadType = 'queried';
+        return true;
+      } else if (obj._loadType === 'websocket' && (Date.now() - obj.localCreatedAt.getTime() < Client.WEBSOCKET_CACHE_PURGE_INTERVAL)) {
+        return true;
+      }
     }
     return false;
   }
@@ -651,7 +657,8 @@ Client.version = '3.3.4';
  * @static
  * @type {number}
  */
-Client.CACHE_PURGE_INTERVAL = 10 * 60 * 1000;
+Client.QUERIED_CACHE_PURGE_INTERVAL = 10 * 60 * 1000; // 10 minutes
+Client.WEBSOCKET_CACHE_PURGE_INTERVAL = 60 * 60 * 1000; // one hour
 
 Client._ignoredEvents = [
   'conversations:loaded',

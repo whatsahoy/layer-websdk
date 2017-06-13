@@ -148,17 +148,19 @@ module.exports = {
      * @return {layer.Identity}
      */
     getIdentity(id, canLoad) {
+      let result = null;
       if (typeof id !== 'string') throw new Error(ErrorDictionary.idParamRequired);
       if (!Identity.isValidId(id)) {
         id = Identity.prefixUUID + encodeURIComponent(id);
       }
 
       if (this._models.identities[id]) {
-        return this._models.identities[id];
+        result = this._models.identities[id];
       } else if (canLoad) {
-        return Identity.load(id, this);
+        result = Identity.load(id, this);
       }
-      return null;
+      if (canLoad) result._loadType = 'fetched';
+      return result;
     },
 
     /**

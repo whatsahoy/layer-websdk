@@ -83,7 +83,8 @@ class WebsocketChangeManager {
    */
   _handleCreate(msg) {
     msg.data.fromWebsocket = true;
-    this.client._createObject(msg.data);
+    const obj = this.client._createObject(msg.data);
+    if (obj) obj._loadType = 'websocket';
   }
 
   /**

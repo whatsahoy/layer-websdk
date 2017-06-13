@@ -105,14 +105,16 @@ module.exports = {
      * @return {layer.Membership}
      */
     getMember(id, canLoad) {
+      let result = null;
       if (typeof id !== 'string') throw new Error(ErrorDictionary.idParamRequired);
 
       if (this._models.members[id]) {
-        return this._models.members[id];
+        result = this._models.members[id];
       } else if (canLoad) {
-        return Syncable.load(id, this);
+        result = Syncable.load(id, this);
       }
-      return null;
+      if (canLoad) result._loadType = 'fetched';
+      return result;
     },
 
     /**
