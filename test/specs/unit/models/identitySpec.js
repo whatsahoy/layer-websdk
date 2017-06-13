@@ -148,6 +148,13 @@ function deleteTables(done) {
           });
         });
 
+        it("Should set a userId if none provided", function() {
+          expect(new layer.Identity({
+            clientId: client.appId
+            id: "layer:///identities/auth0%7Cabc"
+          }).userId).toEqual("auth|abc");
+        });
+
         it("Should set a URL if none provided", function() {
           expect(new layer.Identity({
             userId: "frodo",
