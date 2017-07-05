@@ -160,6 +160,7 @@ class Message extends Syncable {
     this.isInitializing = true;
     if (options && options.fromServer) {
       this._populateFromServer(options.fromServer);
+      this.__updateParts(this.parts);
     } else {
       if (client) this.sender = client.user;
       this.sentAt = new Date();
@@ -215,11 +216,11 @@ class Message extends Syncable {
   }
 
   __updateParts(parts) {
-    if (parts) this._regenerateMimeAttributesMap();
+    this._regenerateMimeAttributesMap();
   }
   _regenerateMimeAttributesMap() {
     this._mimeAttributeMap = {};
-    this.parts.forEach(part => this._addToMimeAttributesMap(part));
+    if (this.parts) this.parts.forEach(part => this._addToMimeAttributesMap(part));
   }
   _addToMimeAttributesMap(part) {
     const map = this._mimeAttributeMap;
@@ -709,7 +710,7 @@ class Message extends Syncable {
    * @returns {layer.MessagePart[]}
    */
   getPartsWithAttribute(name, value = null) {
-    if (!this._mimeAttributeMap[name]) return null;
+    if (!this._mimeAttributeMap[name]) return [];
 
     let result;
     if (value) {

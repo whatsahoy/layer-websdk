@@ -371,6 +371,14 @@ class MessagePart extends Root {
     }
   }
 
+  getMimeTypeWithAttributes() {
+    const attributeString = Object.keys(this.mimeAttributes).map((key) => {
+      if (this.mimeAttributes[key] === true) return key;
+      return key + '=' + this.mimeAttributes[key];
+    }).join(';');
+    return this.mimeType + (attributeString ? ';' + attributeString : '');
+  }
+
   _sendBody() {
     if (typeof this.body !== 'string') {
       const err = 'MessagePart.body must be a string in order to send it';
@@ -378,14 +386,8 @@ class MessagePart extends Root {
       throw new Error(err);
     }
 
-    const attributeString = Object.keys(this.mimeAttributes).map((key) => {
-      if (this.mimeAttributes[key] === true) return key;
-      return key + '=' + this.mimeAttributes[key];
-    }).join(';');
-    const mimeType = this.mimeType + (attributeString ? ';' + attributeString : '');
-
     const obj = {
-      mime_type: mimeType,
+      mime_type: this.getMimeTypeWithAttributes(),
       body: this.body,
     };
     this.trigger('parts:send', obj);
@@ -393,7 +395,7 @@ class MessagePart extends Root {
 
   _sendWithContent() {
     this.trigger('parts:send', {
-      mime_type: this.mimeType,
+      mime_type: this.getMimeTypeWithAttributes(),
       content: {
         size: this.size,
         id: this._content.id,
@@ -418,7 +420,7 @@ class MessagePart extends Root {
         const body = base64data.substring(base64data.indexOf(',') + 1);
         const obj = {
           body,
-          mime_type: this.mimeType,
+          mime_type: this.getMimeTypeWithAttributes(),
         };
         obj.encoding = 'base64';
         this.trigger('parts:send', obj);
@@ -518,7 +520,7 @@ class MessagePart extends Root {
       }
     } else {
       this.trigger('parts:send', {
-        mime_type: this.mimeType,
+        mime_type: this.getMimeTypeWithAttributes(),
         content: {
           size: this.size,
           id: this._content.id,
@@ -625,6 +627,10 @@ class MessagePart extends Root {
    * @param {String} oldValue
    */
   __updateMimeType(newValue, oldValue) {
+    if (newValue.match(/;/)) {
+      this.mimeAttributes = {};
+      this._moveMimeTypeToAttributes();
+    }
     this._triggerAsync('messageparts:change', {
       property: 'mimeType',
       newValue,

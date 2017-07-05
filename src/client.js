@@ -645,7 +645,7 @@ Client.prototype.telemetryMonitor = null;
  * @static
  * @type {String}
  */
-Client.version = '3.3.4';
+Client.version = '3.3.6';
 
 /**
  * Any Conversation or Message that is part of a Query's results are kept in memory for as long as it
