@@ -698,27 +698,30 @@ class Message extends Syncable {
    *
    * ```
    * // get all parts where mime type has "lang=en-us" in it
-   * var enUsParts = message.getPartsWithAttribute('lang', 'en-us');
+   * var enUsParts = message.getPartsMatchingAttribute({'lang': 'en-us'});
    *
-   * // get all parts where mime type has a "lang" attribute in it
-   * var allLangParts = message.getPartsWithAttribute('lang');
+   * // Get all parts with the specified role AND parent-node-id
+   * var sourcePart = message.getPartsMatchingAttribute({'parent-node-id': 'image1', 'role': 'source'});
    * ```
    *
    * @method
-   * @param {String} name
-   * @param {String} [value=null]
+   * @param {Object} matches
    * @returns {layer.MessagePart[]}
    */
-  getPartsWithAttribute(name, value = null) {
-    if (!this._mimeAttributeMap[name]) return [];
-
-    let result;
-    if (value) {
-      result = this._mimeAttributeMap[name].filter(item => item.value === value);
-    } else {
-      result = this._mimeAttributeMap[name];
-    }
-    return result.map(item => item.part);
+  getPartsMatchingAttribute(matches) {
+    let first = true;
+    let results = [];
+    Object.keys(matches).forEach((attributeName) => {
+      const attributeValue = matches[attributeName];
+      const tmpResults = (this._mimeAttributeMap[attributeName] || []).filter(item => item.value === attributeValue).map(item => item.part);
+      if (first) {
+        results = tmpResults;
+        first = false;
+      } else {
+        results = results.filter(item => tmpResults.indexOf(item) !== -1);
+      }
+    });
+    return results;
   }
 
   /**
