@@ -248,6 +248,7 @@ class Message extends Syncable {
    */
   addPart(part) {
     if (part) {
+      const oldValue = this.parts ? [].concat(this.parts) : null;
       part.clientId = this.clientId;
       if (part instanceof MessagePart) {
         this.parts.push(part);
@@ -261,6 +262,11 @@ class Message extends Syncable {
       thePart.on('messageparts:change', this._onMessagePartChange, this);
       if (!part.id) part.id = `${this.id}/parts/${index}`;
       this._addToMimeAttributesMap(thePart);
+      this.trigger('messages:change', {
+        property: 'parts',
+        oldValue,
+        newValue: this.parts,
+      });
     }
     return this;
   }

@@ -139,7 +139,9 @@ class MessagePart extends Root {
     const attributes = this.mimeAttributes;
     const parameters = this.mimeType.split(/\s*;\s*/);
     if (!parameters) return;
+    this.isInitializing = true;
     this.mimeType = parameters.shift();
+    this.isInitializing = false;
 
     parameters.forEach((param) => {
       const index = param.indexOf('=');
