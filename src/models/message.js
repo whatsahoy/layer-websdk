@@ -267,6 +267,7 @@ class Message extends Syncable {
         oldValue,
         newValue: this.parts,
       });
+      this.trigger('messages:part-added', { part });
     }
     return this;
   }
@@ -1088,7 +1089,14 @@ Message._supportedEvents = [
    */
   'messages:change',
 
-
+  /**
+   * A new Message Part has been added
+   *
+   * @event
+   * @param {layer.LayerEvent} evt
+   * @param {layer.MessagePart} evt.part
+   */
+  'messages:part-added',
 ].concat(Syncable._supportedEvents);
 
 Root.initClass.apply(Message, [Message, 'Message']);
