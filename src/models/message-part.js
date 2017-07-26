@@ -103,18 +103,19 @@ class MessagePart extends Root {
         body,
         size: body.size,
         hasContent: true,
+        mimeAttributes: options.mimeAttributes,
       };
     }
     super(newOptions);
 
-    this.mimeAttributes = {};
+    if (!this.mimeAttributes) this.mimeAttributes = {};
     this._moveMimeTypeToAttributes();
 
     if (!this.size && this.body) this.size = this.body.length;
 
     // Don't expose encoding; blobify it if its encoded.
     if (options.encoding === 'base64') {
-      this.body = Util.base64ToBlob(this.body);
+      this.body = Util.base64ToBlob(this.body, this.mimeType);
     }
 
     // Could be a blob because it was read out of indexedDB,
@@ -652,7 +653,7 @@ class MessagePart extends Root {
     const content = (part.content) ? Content._createFromServer(part.content) : null;
 
     // Turn base64 data into a Blob
-    if (part.encoding === 'base64') part.body = Util.base64ToBlob(part.body, part.mimeType);
+    if (part.encoding === 'base64') part.body = Util.base64ToBlob(part.body, part.mime_type.replace(/;.*/, ''));
 
     // Create the MessagePart
     return new MessagePart({
@@ -796,3 +797,4 @@ MessagePart._supportedEvents = [
 Root.initClass.apply(MessagePart, [MessagePart, 'MessagePart']);
 
 module.exports = MessagePart;
+

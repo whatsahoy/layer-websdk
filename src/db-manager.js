@@ -775,7 +775,7 @@ class DbManager extends Root {
 
   _blobifyPart(part) {
     if (part.useBlob) {
-      part.body = Util.base64ToBlob(part.body);
+      part.body = Util.base64ToBlob(part.body, part.mimeType);
       delete part.useBlob;
       part.encoding = null;
     }
