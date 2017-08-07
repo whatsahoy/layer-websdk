@@ -643,16 +643,16 @@ Client.prototype.telemetryMonitor = null;
 Client.version = '3.4.0';
 
 /**
- * Any Conversation or Message that is part of a Query's results are kept in memory for as long as it
- * remains in that Query.  However, when a websocket event delivers new Messages and Conversations that
+ * Any  Message that is part of a Query's results are kept in memory for as long as it
+ * remains in that Query.  However, when a websocket event delivers new Messages  that
  * are NOT part of a Query, how long should they stick around in memory?  Why have them stick around?
  * Perhaps an app wants to post a notification of a new Message or Conversation... and wants to keep
- * the object local for a little while.  Default is 10 minutes before checking to see if
+ * the object local for a little while.  Default is 2 hours before checking to see if
  * the object is part of a Query or can be uncached.  Value is in miliseconds.
  * @static
  * @type {number}
  */
-Client.CACHE_PURGE_INTERVAL = 10 * 60 * 1000;
+Client.CACHE_PURGE_INTERVAL = 2 * 60 * 60 * 1000; // 2 hours * 60 minutes per hour * 60 seconds per minute * 1000 miliseconds/second
 
 Client._ignoredEvents = [
   'conversations:loaded',

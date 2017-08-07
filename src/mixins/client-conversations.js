@@ -239,8 +239,6 @@ module.exports = {
         // Make sure the client is set so that the next event bubbles up
         if (conversation.clientId !== this.appId) conversation.clientId = this.appId;
         this._triggerAsync('conversations:add', { conversations: [conversation] });
-
-        this._scheduleCheckAndPurgeCache(conversation);
       }
     },
 
