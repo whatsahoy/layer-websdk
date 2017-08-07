@@ -200,7 +200,7 @@ describe("The Client Conversation Mixin", function() {
             expect(client._triggerAsync).not.toHaveBeenCalled();
         });
 
-        it("Should call _scheduleCheckAndPurgeCache", function() {
+        it("Should no longer call _scheduleCheckAndPurgeCache", function() {
             spyOn(client, "_scheduleCheckAndPurgeCache");
 
             // Run
@@ -210,7 +210,7 @@ describe("The Client Conversation Mixin", function() {
             client._addConversation(c);
 
             // Posttest
-            expect(client._scheduleCheckAndPurgeCache).toHaveBeenCalledWith(c);
+            expect(client._scheduleCheckAndPurgeCache).not.toHaveBeenCalled();
         });
     });
 
