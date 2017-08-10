@@ -319,6 +319,7 @@ class Conversation extends Container {
     this.participants = client._fixIdentities(conversation.participants);
     this.participants.forEach(identity => identity.on('identities:change', this._handleParticipantChangeEvent, this));
     this.distinct = conversation.distinct;
+    this.totalMessageCount = conversation.total_message_count;
     this.unreadCount = conversation.unread_message_count;
     this.isCurrentParticipant = this.participants.indexOf(client.user) !== -1;
     super._populateFromServer(conversation);
