@@ -502,6 +502,13 @@ Container.prototype.metadata = null;
  */
 Container.prototype.isCurrentParticipant = true;
 
+/**
+ * The number of all messages in conversation.
+ *
+ * @type {Boolean}
+ */
+Container.prototype.totalMessageCount = 0;
+
 
 /**
  * Cache's a Distinct Event.

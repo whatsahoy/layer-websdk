@@ -321,6 +321,7 @@ class Conversation extends Container {
     this.distinct = conversation.distinct;
     this.totalMessageCount = conversation.total_message_count;
     this.unreadCount = conversation.unread_message_count;
+    this.totalMessageCount = conversation.total_message_count;
     this.isCurrentParticipant = this.participants.indexOf(client.user) !== -1;
     super._populateFromServer(conversation);
 
